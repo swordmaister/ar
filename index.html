@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="utf-8">
-  <title>ARマーカーで星が降る</title>
+  <title>ARマーカーで⭐️が降る</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
   <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/ar.js@3.4.2/aframe/build/aframe-ar.min.js"></script>
@@ -39,9 +39,18 @@
   <div id="sceneContainer"></div>
 
   <script>
-    document.getElementById('startBtn').addEventListener('click', () => {
+    document.getElementById('startBtn').addEventListener('click', async () => {
       document.getElementById('startBtn').style.display = 'none';
 
+      // iOS Safariでカメラ許可を促す
+      try {
+        await navigator.mediaDevices.getUserMedia({ video: true });
+      } catch (e) {
+        alert('カメラの使用が許可されていません。iOSの設定 → Safari → カメラ → 許可 を確認してください。');
+        return;
+      }
+
+      // ARシーンを動的に生成
       const sceneHTML = `
         <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;">
           <a-marker type="pattern" url="./kabocha.patt">
@@ -53,7 +62,7 @@
       `;
       document.getElementById('sceneContainer').innerHTML = sceneHTML;
 
-      // ⭐️イベントは後から追加
+      // ⭐️イベントを追加
       setTimeout(() => {
         const button = document.querySelector('#button');
         const container = document.querySelector('#star-container');
