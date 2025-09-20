@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>WebAR ボタンと光</title>
+    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/aframe-ar@1.8.0/dist/aframe-ar.min.js"></script>
+  </head>
+  <body style="margin: 0; overflow: hidden;">
+    <a-scene
+      vr-mode-ui="enabled: false"
+      arjs="sourceType: webcam; debugUIEnabled: false;"
+      embedded
+      renderer="logarithmicDepthBuffer: true;"
+    >
+      <!-- 空間に配置するボタン -->
+      <a-box id="button" position="0 0 -1" depth="0.1" height="0.2" width="0.6"
+             color="black" cursor="rayOrigin: mouse"></a-box>
+
+      <!-- 光の球体（初期は非表示） -->
+      <a-sphere id="light" position="0 2 -1" radius="0.1" color="#ffffff" visible="false"></a-sphere>
+
+      <a-entity camera></a-entity>
+    </a-scene>
+
+    <script>
+      const button = document.querySelector('#button');
+      const light = document.querySelector('#light');
+
+      button.addEventListener('click', () => {
+        light.setAttribute('visible', true);
+        let y = 2;
+        const fall = setInterval(() => {
+          y -= 0.05;
+          if (y <= 0.3) {
+            clearInterval(fall);
+          } else {
+            light.setAttribute('position', `0 ${y} -1`);
+          }
+        }, 30);
+      });
+    </script>
+  </body>
+</html>
