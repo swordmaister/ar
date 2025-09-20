@@ -18,41 +18,26 @@
       font-size: 14px;
       z-index: 10;
     }
-    #arjs-video, video {
-      position: fixed !important;
-      top: 0;
-      left: 0;
-      width: 100vw !important;
-      height: 100vh !important;
-      z-index: 0;
-      object-fit: cover;
-      display: block !important;
-      opacity: 1 !important;
-      background: #000;
-    }
   </style>
 </head>
 <body>
-  <div class="notice">📷 カメラアクセスを許可して、マーカーに黒いボタンが表示されたらタップ → ⭐️が降ります</div>
+  <div class="notice">📷 カメラを許可 → マーカーに黒いボタンが表示されたらタップ → ⭐️が降ります</div>
 
-  <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: true;">
+  <a-scene
+    embedded
+    vr-mode-ui="enabled: false"
+    arjs="sourceType: webcam; debugUIEnabled: false;">
+    
     <a-marker type="pattern" url="./kabocha.patt">
-      <a-box id="button" position="0 0.5 0" depth="0.2" height="0.2" width="0.6" color="#000" shadow></a-box>
+      <a-box id="button" position="0 0.5 0" depth="0.2" height="0.2" width="0.6"
+             color="#000" shadow></a-box>
       <a-entity id="star-container"></a-entity>
     </a-marker>
+
     <a-entity camera></a-entity>
   </a-scene>
 
   <script>
-    // iOS Safariでカメラ許可を促す
-    window.addEventListener('load', async () => {
-      try {
-        await navigator.mediaDevices.getUserMedia({ video: true });
-      } catch (e) {
-        alert('カメラの使用が許可されていません。iOSの設定 → Safari → カメラ → 許可 を確認してください。');
-      }
-    });
-
     // ⭐️イベントバインド
     window.addEventListener('DOMContentLoaded', () => {
       const button = document.querySelector('#button');
@@ -63,15 +48,37 @@
           const star = document.createElement('a-text');
           star.setAttribute('value', '⭐️');
           star.setAttribute('position', `${(Math.random()-0.5)*1.5} 2 ${(Math.random()-0.5)*1.5}`);
+
+          // 落下アニメーション（ランダムな着地点へ）
+          const toX = (Math.random()-0.5) * 1.5;
+          const toZ = (Math.random()-0.5) * 1.5;
           star.setAttribute('animation', {
             property: 'position',
-            to: '0 -1 0',
+            to: `${toX} -1 ${toZ}`,
             dur: 2000 + Math.random()*1000,
             easing: 'easeInQuad'
           });
-          star.setAttribute('scale', '1 1 1');
+
+          // ランダムサイズ
+          const scale = 0.5 + Math.random() * 1.5;
+          star.setAttribute('scale', `${scale} ${scale} ${scale}`);
+
+          // フェードアウト
+          star.setAttribute('animation__opacity', {
+            property: 'opacity',
+            to: 0,
+            dur: 2000,
+            delay: 1000
+          });
+
           container.appendChild(star);
-          setTimeout(() => container.removeChild(star), 3000);
+
+          // 古い要素を削除してDOM肥大防止
+          setTimeout(() => {
+            if (star.parentNode) {
+              container.removeChild(star);
+            }
+          }, 3500);
         }
       }
 
