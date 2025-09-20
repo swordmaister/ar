@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <title>ARマーカーで⭐️が降る</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
   <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/ar.js@3.4.2/aframe/build/aframe-ar.min.js"></script>
   <style>
@@ -12,7 +12,7 @@
       position: absolute;
       top: 10px;
       left: 10px;
-      background: rgba(255,255,255,0.8);
+      background: rgba(255,255,255,0.85);
       padding: 8px 12px;
       border-radius: 8px;
       font-size: 14px;
@@ -21,7 +21,7 @@
   </style>
 </head>
 <body>
-  <div class="notice">📷 カメラアクセスを許可して、マーカーに黒いボタンを表示 → タップで⭐️が降ります</div>
+  <div class="notice">📷 カメラアクセスを許可して、マーカーに黒いボタンが表示されたらタップ → ⭐️が降ります</div>
 
   <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;">
     <!-- ARマーカー（GitHub上のkabocha.patt） -->
