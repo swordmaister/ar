@@ -21,69 +21,89 @@
   </style>
 </head>
 <body>
-  <div class="notice">📷 カメラを許可 → マーカーに黒いボタンが表示されたらタップ → ⭐️が降ります</div>
+  <div class="notice">
+    📷 カメラを許可 → マーカーに黒いボタンが出たらタップ → ⭐️が降ります
+  </div>
 
   <a-scene
     embedded
     vr-mode-ui="enabled: false"
+    renderer="logarithmicDepthBuffer: true;"
     arjs="sourceType: webcam; debugUIEnabled: false;">
     
     <a-marker type="pattern" url="./kabocha.patt">
-      <a-box id="button" position="0 0.5 0" depth="0.2" height="0.2" width="0.6"
-             color="#000" shadow></a-box>
+      <a-box id="button" position="0 0.5 0"
+             depth="0.2" height="0.2" width="0.6"
+             color="#000" shadow
+             star-spawner></a-box>
       <a-entity id="star-container"></a-entity>
     </a-marker>
 
-    <a-entity camera></a-entity>
+    <a-camera>
+      <a-cursor fuse="true" fuse-timeout="2000" raycaster="objects: #button"></a-cursor>
+    </a-camera>
   </a-scene>
 
   <script>
-    // ⭐️イベントバインド
-    window.addEventListener('DOMContentLoaded', () => {
-      const button = document.querySelector('#button');
-      const container = document.querySelector('#star-container');
+    // カスタムコンポーネントを定義してイベントを処理
+    AFRAME.registerComponent('star-spawner', {
+      init: function () {
+        this.el.addEventListener('click', () => {
+          this.triggerStars();
+        });
+      },
 
-      function triggerStars() {
+      triggerStars: function () {
+        const container = document.querySelector('#star-container');
+
         for (let i = 0; i < 20; i++) {
-          const star = document.createElement('a-text');
-          star.setAttribute('value', '⭐️');
+          const star = document.createElement('a-entity');
+          
+          // A-Frameのコンポーネントとしてテキストとマテリアルを設定
+          star.setAttribute('text', {
+            value: '⭐️',
+            color: '#FFD700'
+          });
+          star.setAttribute('material', {
+            opacity: 1
+          });
+
+          // ランダムな初期位置
           star.setAttribute('position', `${(Math.random()-0.5)*1.5} 2 ${(Math.random()-0.5)*1.5}`);
 
-          // 落下アニメーション（ランダムな着地点へ）
+          // 落下アニメーション
           const toX = (Math.random()-0.5) * 1.5;
           const toZ = (Math.random()-0.5) * 1.5;
-          star.setAttribute('animation', {
-            property: 'position',
-            to: `${toX} -1 ${toZ}`,
-            dur: 2000 + Math.random()*1000,
-            easing: 'easeInQuad'
-          });
+          star.setAttribute(
+            'animation',
+            `property: position; to: ${toX} -1 ${toZ}; dur: ${2000 + Math.random()*1000}; easing: easeInQuad`
+          );
+
+          // フェードアウトアニメーション（material.opacityを使用）
+          star.setAttribute(
+            'animation__fade',
+            `property: material.opacity; to: 0; dur: 2000; delay: 1000; easing: easeOutQuad`
+          );
 
           // ランダムサイズ
           const scale = 0.5 + Math.random() * 1.5;
           star.setAttribute('scale', `${scale} ${scale} ${scale}`);
 
-          // フェードアウト
-          star.setAttribute('animation__opacity', {
-            property: 'opacity',
-            to: 0,
-            dur: 2000,
-            delay: 1000
-          });
-
           container.appendChild(star);
 
-          // 古い要素を削除してDOM肥大防止
+          // アニメーション終了後にDOMから削除
           setTimeout(() => {
             if (star.parentNode) {
-              container.removeChild(star);
+              star.parentNode.removeChild(star);
             }
           }, 3500);
         }
       }
+    });
 
-      button.addEventListener('click', triggerStars);
-      button.addEventListener('touchstart', triggerStars);
+    // カメラ起動確認（Safari対策）
+    document.addEventListener('arjs-video-loaded', () => {
+      console.log('✅ カメラ映像が取得できました！');
     });
   </script>
 </body>
