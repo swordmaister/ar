@@ -2,12 +2,25 @@
 <html lang="ja">
 <head>
   <meta charset="utf-8">
-  <title>ARマーカーで⭐️が降る</title>
+  <title>ARマーカーで星が降る</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
   <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/ar.js@3.4.2/aframe/build/aframe-ar.min.js"></script>
   <style>
-    body { margin: 0; overflow: hidden; font-family: sans-serif; }
+    body { margin: 0; overflow: hidden; font-family: sans-serif; background: #000; }
+    #startBtn {
+      position: absolute;
+      top: 40%;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 14px 24px;
+      font-size: 16px;
+      background: #fff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      z-index: 10;
+    }
     .notice {
       position: absolute;
       top: 10px;
@@ -21,48 +34,51 @@
   </style>
 </head>
 <body>
+  <button id="startBtn">ARを開始</button>
   <div class="notice">📷 カメラアクセスを許可して、マーカーに黒いボタンが表示されたらタップ → ⭐️が降ります</div>
-
-  <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;">
-    <!-- ARマーカー（GitHub上のkabocha.patt） -->
-    <a-marker type="pattern" url="./kabocha.patt">
-      <!-- 黒いボタン -->
-      <a-box id="button" position="0 0.5 0" depth="0.2" height="0.2" width="0.6"
-             color="#000" shadow></a-box>
-
-      <!-- ⭐️を降らせるコンテナ -->
-      <a-entity id="star-container"></a-entity>
-    </a-marker>
-
-    <a-entity camera></a-entity>
-  </a-scene>
+  <div id="sceneContainer"></div>
 
   <script>
-    const button = document.querySelector('#button');
-    const container = document.querySelector('#star-container');
+    document.getElementById('startBtn').addEventListener('click', () => {
+      document.getElementById('startBtn').style.display = 'none';
 
-    function triggerStars() {
-      for (let i = 0; i < 20; i++) {
-        const star = document.createElement('a-text');
-        star.setAttribute('value', '⭐️');
-        star.setAttribute('position', `${(Math.random()-0.5)*1.5} 2 ${(Math.random()-0.5)*1.5}`);
-        star.setAttribute('animation', {
-          property: 'position',
-          to: '0 -1 0',
-          dur: 2000 + Math.random()*1000,
-          easing: 'easeInQuad'
-        });
-        star.setAttribute('scale', '1 1 1');
-        container.appendChild(star);
+      const sceneHTML = `
+        <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;">
+          <a-marker type="pattern" url="./kabocha.patt">
+            <a-box id="button" position="0 0.5 0" depth="0.2" height="0.2" width="0.6" color="#000" shadow></a-box>
+            <a-entity id="star-container"></a-entity>
+          </a-marker>
+          <a-entity camera></a-entity>
+        </a-scene>
+      `;
+      document.getElementById('sceneContainer').innerHTML = sceneHTML;
 
-        setTimeout(() => {
-          container.removeChild(star);
-        }, 3000);
-      }
-    }
+      // ⭐️イベントは後から追加
+      setTimeout(() => {
+        const button = document.querySelector('#button');
+        const container = document.querySelector('#star-container');
 
-    button.addEventListener('click', triggerStars);
-    button.addEventListener('touchstart', triggerStars);
+        function triggerStars() {
+          for (let i = 0; i < 20; i++) {
+            const star = document.createElement('a-text');
+            star.setAttribute('value', '⭐️');
+            star.setAttribute('position', `${(Math.random()-0.5)*1.5} 2 ${(Math.random()-0.5)*1.5}`);
+            star.setAttribute('animation', {
+              property: 'position',
+              to: '0 -1 0',
+              dur: 2000 + Math.random()*1000,
+              easing: 'easeInQuad'
+            });
+            star.setAttribute('scale', '1 1 1');
+            container.appendChild(star);
+            setTimeout(() => container.removeChild(star), 3000);
+          }
+        }
+
+        button.addEventListener('click', triggerStars);
+        button.addEventListener('touchstart', triggerStars);
+      }, 1000);
+    });
   </script>
 </body>
 </html>
