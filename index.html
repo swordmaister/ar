@@ -8,19 +8,6 @@
   <script src="https://cdn.jsdelivr.net/npm/ar.js@3.4.2/aframe/build/aframe-ar.min.js"></script>
   <style>
     body { margin: 0; overflow: hidden; font-family: sans-serif; background: #000; }
-    #startBtn {
-      position: absolute;
-      top: 40%;
-      left: 50%;
-      transform: translateX(-50%);
-      padding: 14px 24px;
-      font-size: 16px;
-      background: #fff;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      z-index: 10;
-    }
     .notice {
       position: absolute;
       top: 10px;
@@ -31,62 +18,62 @@
       font-size: 14px;
       z-index: 10;
     }
+    #arjs-video {
+      position: fixed !important;
+      top: 0;
+      left: 0;
+      width: 100vw !important;
+      height: 100vh !important;
+      z-index: 0;
+      object-fit: cover;
+    }
   </style>
 </head>
 <body>
-  <button id="startBtn">ARを開始</button>
   <div class="notice">📷 カメラアクセスを許可して、マーカーに黒いボタンが表示されたらタップ → ⭐️が降ります</div>
-  <div id="sceneContainer"></div>
+
+  <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: true;">
+    <a-marker type="pattern" url="./kabocha.patt">
+      <a-box id="button" position="0 0.5 0" depth="0.2" height="0.2" width="0.6" color="#000" shadow></a-box>
+      <a-entity id="star-container"></a-entity>
+    </a-marker>
+    <a-entity camera></a-entity>
+  </a-scene>
 
   <script>
-    document.getElementById('startBtn').addEventListener('click', async () => {
-      document.getElementById('startBtn').style.display = 'none';
-
-      // iOS Safariでカメラ許可を促す
+    // iOS Safariでカメラ許可を促す（初期化前に呼び出すことで安定性向上）
+    window.addEventListener('load', async () => {
       try {
         await navigator.mediaDevices.getUserMedia({ video: true });
       } catch (e) {
         alert('カメラの使用が許可されていません。iOSの設定 → Safari → カメラ → 許可 を確認してください。');
-        return;
+      }
+    });
+
+    // ⭐️イベントバインド
+    window.addEventListener('DOMContentLoaded', () => {
+      const button = document.querySelector('#button');
+      const container = document.querySelector('#star-container');
+
+      function triggerStars() {
+        for (let i = 0; i < 20; i++) {
+          const star = document.createElement('a-text');
+          star.setAttribute('value', '⭐️');
+          star.setAttribute('position', `${(Math.random()-0.5)*1.5} 2 ${(Math.random()-0.5)*1.5}`);
+          star.setAttribute('animation', {
+            property: 'position',
+            to: '0 -1 0',
+            dur: 2000 + Math.random()*1000,
+            easing: 'easeInQuad'
+          });
+          star.setAttribute('scale', '1 1 1');
+          container.appendChild(star);
+          setTimeout(() => container.removeChild(star), 3000);
+        }
       }
 
-      // ARシーンを動的に生成
-      const sceneHTML = `
-        <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;">
-          <a-marker type="pattern" url="./kabocha.patt">
-            <a-box id="button" position="0 0.5 0" depth="0.2" height="0.2" width="0.6" color="#000" shadow></a-box>
-            <a-entity id="star-container"></a-entity>
-          </a-marker>
-          <a-entity camera></a-entity>
-        </a-scene>
-      `;
-      document.getElementById('sceneContainer').innerHTML = sceneHTML;
-
-      // ⭐️イベントを追加
-      setTimeout(() => {
-        const button = document.querySelector('#button');
-        const container = document.querySelector('#star-container');
-
-        function triggerStars() {
-          for (let i = 0; i < 20; i++) {
-            const star = document.createElement('a-text');
-            star.setAttribute('value', '⭐️');
-            star.setAttribute('position', `${(Math.random()-0.5)*1.5} 2 ${(Math.random()-0.5)*1.5}`);
-            star.setAttribute('animation', {
-              property: 'position',
-              to: '0 -1 0',
-              dur: 2000 + Math.random()*1000,
-              easing: 'easeInQuad'
-            });
-            star.setAttribute('scale', '1 1 1');
-            container.appendChild(star);
-            setTimeout(() => container.removeChild(star), 3000);
-          }
-        }
-
-        button.addEventListener('click', triggerStars);
-        button.addEventListener('touchstart', triggerStars);
-      }, 1000);
+      button.addEventListener('click', triggerStars);
+      button.addEventListener('touchstart', triggerStars);
     });
   </script>
 </body>
