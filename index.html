@@ -18,7 +18,7 @@
       font-size: 14px;
       z-index: 10;
     }
-    #arjs-video {
+    #arjs-video, video {
       position: fixed !important;
       top: 0;
       left: 0;
@@ -26,6 +26,9 @@
       height: 100vh !important;
       z-index: 0;
       object-fit: cover;
+      display: block !important;
+      opacity: 1 !important;
+      background: #000;
     }
   </style>
 </head>
@@ -41,7 +44,7 @@
   </a-scene>
 
   <script>
-    // iOS Safariでカメラ許可を促す（初期化前に呼び出すことで安定性向上）
+    // iOS Safariでカメラ許可を促す
     window.addEventListener('load', async () => {
       try {
         await navigator.mediaDevices.getUserMedia({ video: true });
