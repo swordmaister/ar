@@ -1,44 +1,68 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <title>WebAR ボタンと光</title>
-    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/aframe-ar@1.8.0/dist/aframe-ar.min.js"></script>
-  </head>
-  <body style="margin: 0; overflow: hidden;">
-    <a-scene
-      vr-mode-ui="enabled: false"
-      arjs="sourceType: webcam; debugUIEnabled: false;"
-      embedded
-      renderer="logarithmicDepthBuffer: true;"
-    >
-      <!-- 空間に配置するボタン -->
-      <a-box id="button" position="0 0 -1" depth="0.1" height="0.2" width="0.6"
-             color="black" cursor="rayOrigin: mouse"></a-box>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <title>ARマーカーで⭐️が降る</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/ar.js@3.4.2/aframe/build/aframe-ar.min.js"></script>
+  <style>
+    body { margin: 0; overflow: hidden; font-family: sans-serif; }
+    .notice {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(255,255,255,0.8);
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 14px;
+      z-index: 10;
+    }
+  </style>
+</head>
+<body>
+  <div class="notice">📷 カメラアクセスを許可して、マーカーに黒いボタンを表示 → タップで⭐️が降ります</div>
 
-      <!-- 光の球体（初期は非表示） -->
-      <a-sphere id="light" position="0 2 -1" radius="0.1" color="#ffffff" visible="false"></a-sphere>
+  <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;">
+    <!-- ARマーカー（GitHub上のkabocha.patt） -->
+    <a-marker type="pattern" url="./kabocha.patt">
+      <!-- 黒いボタン -->
+      <a-box id="button" position="0 0.5 0" depth="0.2" height="0.2" width="0.6"
+             color="#000" shadow></a-box>
 
-      <a-entity camera></a-entity>
-    </a-scene>
+      <!-- ⭐️を降らせるコンテナ -->
+      <a-entity id="star-container"></a-entity>
+    </a-marker>
 
-    <script>
-      const button = document.querySelector('#button');
-      const light = document.querySelector('#light');
+    <a-entity camera></a-entity>
+  </a-scene>
 
-      button.addEventListener('click', () => {
-        light.setAttribute('visible', true);
-        let y = 2;
-        const fall = setInterval(() => {
-          y -= 0.05;
-          if (y <= 0.3) {
-            clearInterval(fall);
-          } else {
-            light.setAttribute('position', `0 ${y} -1`);
-          }
-        }, 30);
-      });
-    </script>
-  </body>
+  <script>
+    const button = document.querySelector('#button');
+    const container = document.querySelector('#star-container');
+
+    function triggerStars() {
+      for (let i = 0; i < 20; i++) {
+        const star = document.createElement('a-text');
+        star.setAttribute('value', '⭐️');
+        star.setAttribute('position', `${(Math.random()-0.5)*1.5} 2 ${(Math.random()-0.5)*1.5}`);
+        star.setAttribute('animation', {
+          property: 'position',
+          to: '0 -1 0',
+          dur: 2000 + Math.random()*1000,
+          easing: 'easeInQuad'
+        });
+        star.setAttribute('scale', '1 1 1');
+        container.appendChild(star);
+
+        setTimeout(() => {
+          container.removeChild(star);
+        }, 3000);
+      }
+    }
+
+    button.addEventListener('click', triggerStars);
+    button.addEventListener('touchstart', triggerStars);
+  </script>
+</body>
 </html>
